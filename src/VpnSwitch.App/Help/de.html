@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>D2C VPN Switch – Hilfe</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>D2C VPN Switch – Hilfe</h1>
+  <div class="lang"><a href="de.html">Deutsch</a><a href="en.html">English</a></div>
+</header>
+<div class="wrap">
+<nav>
+  <a href="#schnellstart">Schnellstart</a>
+  <a href="#umschalten">Umschalten</a>
+  <a href="#ecatcher-reparatur">eCatcher-Adapter reparieren</a>
+  <a href="#dienste">Dienste</a>
+  <a href="#adapter">Netzwerkadapter</a>
+  <a href="#software">Installierte Software</a>
+  <a href="#einstellungen">Einstellungen</a>
+  <a href="#fehlersuche">Fehlersuche</a>
+  <a href="#dateien">Dateien und Ordner</a>
+</nav>
+<main>
+
+<section id="schnellstart">
+<h2>Schnellstart</h2>
+<p>Der D2C VPN Switch hält mehrere OpenVPN-basierte Fernwartungs-Clients auf einem PC nebeneinander lauffähig:</p>
+<table>
+<tr><th>Client</th><th>Dienst</th><th>Adapter</th></tr>
+<tr><td>device2cloud / machinetoservice</td><td><code>OpenVPNServiceInteractive</code> (OpenVPN)</td><td><code>OpenVPN TAP-Windows6</code></td></tr>
+<tr><td>Sophos Connect</td><td><code>OpenVPNServiceInteractive</code> (Sophos)</td><td><code>Sophos-TAP</code></td></tr>
+<tr><td>eWON eCatcher (Talk2M)</td><td><code>Talk2mVpnService</code></td><td><code>Talk2m-eCatcher</code></td></tr>
+</table>
+<ol>
+<li>Das Programm startet nach der Windows-Abfrage (Administratorrechte) und sucht automatisch.</li>
+<li>Oben steht, welcher Client den gemeinsamen Dienst <code>OpenVPNServiceInteractive</code> gerade belegt.</li>
+<li>Auf dem Tab <b>Umschalten</b> den gewünschten Client wählen und <b>Ausgewählten aktivieren</b> klicken.</li>
+<li>Im Log unten steht, was passiert ist.</li>
+</ol>
+<div class="note warn">Vor dem Umschalten bestehende VPN-Verbindungen trennen.</div>
+</section>
+
+<section id="umschalten">
+<h2>Umschalten</h2>
+<p>Sophos Connect und OpenVPN/device2cloud registrieren beide den Dienst <code>OpenVPNServiceInteractive</code>, aber mit unterschiedlicher <code>openvpnserv.exe</code>.
+Es kann nur einer aktiv sein. <b>Ausgewählten aktivieren</b> (oder Doppelklick):</p>
+<ol>
+<li>stoppt den Dienst,</li>
+<li>setzt dessen <code>ImagePath</code> in der Registry auf die gewählte <code>openvpnserv.exe</code>,</li>
+<li>startet den Dienst wieder.</li>
+</ol>
+<p>eCatcher hat einen eigenen Dienst. Dort startet <b>aktivieren</b> nur den Talk2M-Dienst.</p>
+</section>
+
+<section id="ecatcher-reparatur">
+<h2>eCatcher-Adapter reparieren</h2>
+<p>eCatcher kann bei der Installation einen fremden TAP-Adapter übernehmen. Dann findet device2cloud seinen Adapter nicht mehr (<code>Adapter '{GUID}' not found</code>). Der Reparatur-Assistent</p>
+<ol>
+<li>stoppt den Talk2M-Dienst,</li>
+<li>gibt einen von eCatcher übernommenen Adapter an OpenVPN zurück (Name <code>OpenVPN TAP-Windows6</code>),</li>
+<li>legt für eCatcher einen eigenen Adapter <code>Talk2m-eCatcher</code> an (<code>tapctl</code>, sonst <code>addtap.bat</code>),</li>
+<li>startet den Talk2M-Dienst wieder.</li>
+</ol>
+<div class="note warn">eCatcher vorher beenden (auch im Tray) und alle VPN-Verbindungen trennen. Danach zuerst device2cloud, dann eCatcher testen.</div>
+</section>
+
+<section id="dienste">
+<h2>Dienste</h2>
+<p>Zeigt alle Dienste mit VPN-Bezug. Rot: Start „Auto“, aber der Dienst läuft nicht. <b>Starten</b>, <b>Stoppen</b>, <b>Neu starten</b> wirken auf den gewählten Dienst.
+<b>Laufende openvpn.exe beenden</b> beendet hängende OpenVPN-Prozesse, die einen TAP-Adapter blockieren; bestehende Verbindungen werden dabei getrennt.</p>
+</section>
+
+<section id="adapter">
+<h2>Netzwerkadapter</h2>
+<p>Zeigt TAP-/Wintun-Adapter und andere VPN-Adapter mit Status und GUID. <b>Umbenennen</b>, <b>Aktivieren</b> und <b>Deaktivieren</b> wirken auf den gewählten Adapter.
+<b>Neuer TAP-Adapter</b> legt einen weiteren Adapter mit eigenem Namen an, damit jeder Client seinen eigenen hat.</p>
+<div class="note">Alle „TAP-Windows Adapter V9“ teilen sich den Treiber <code>tap0901.sys</code>. Installiert ein Client einen älteren Treiber (eCatcher: 9.0.0.21), können Adapter mit dem neueren Treiber (9.24) ausfallen. Abhilfe: OpenVPN-Installation reparieren, Treiber im Geräte-Manager angleichen, Neustart.</div>
+</section>
+
+<section id="software">
+<h2>Installierte VPN-Software</h2>
+<p>Liste der installierten Programme mit VPN-Bezug (aus der Windows-Programmliste), mit Version und Hersteller.</p>
+</section>
+
+<section id="einstellungen">
+<h2>Einstellungen</h2>
+<table>
+<tr><th>Einstellung</th><th>Bedeutung</th></tr>
+<tr><td>Sprache</td><td>Deutsch oder English, wirkt sofort. Auch über Ansicht › Sprache.</td></tr>
+<tr><td>Beim Start nach neuen Versionen suchen</td><td>Fragt höchstens alle 20 Stunden bei GitHub nach der neuesten Version. Es werden keine Nutzungsdaten übertragen.</td></tr>
+</table>
+<p>Es werden keine Passwörter oder Profildateien gespeichert.</p>
+</section>
+
+<section id="fehlersuche">
+<h2>Fehlersuche</h2>
+<table>
+<tr><th>Meldung / Symptom</th><th>Ursache und Abhilfe</th></tr>
+<tr><td><code>Adapter '{GUID}' not found</code></td><td>Der Dienst <code>OpenVPNServiceInteractive</code> gehört zum falschen Client. Auf dem Tab <b>Umschalten</b> den richtigen Client aktivieren.</td></tr>
+<tr><td><code>CreateFile failed on tap-windows6 device</code></td><td>Treiberkonflikt (siehe Netzwerkadapter) oder eine hängende <code>openvpn.exe</code>. Erst <b>Laufende openvpn.exe beenden</b>, sonst OpenVPN-Installation reparieren und neu starten.</td></tr>
+<tr><td>Adapter „Talk2m-eCatcher“ fehlt</td><td><b>eCatcher-Adapter reparieren</b> oder <b>Neuer TAP-Adapter</b> mit dem Namen <code>Talk2m-eCatcher</code>.</td></tr>
+<tr><td>Fehler beim Umschalten</td><td>VPN-Verbindungen trennen, Tab Dienste prüfen und erneut versuchen. Der Fehlertext steht im Log.</td></tr>
+<tr><td>Programm startet nicht</td><td>Die Windows-Abfrage (Administratorrechte) muss bestätigt werden.</td></tr>
+</table>
+</section>
+
+<section id="dateien">
+<h2>Dateien und Ordner</h2>
+<ul>
+<li>Einstellungen: <code>%APPDATA%\D2C-VPN-Switch\settings.json</code> (Hilfe › Einstellungsordner öffnen)</li>
+<li>Es werden keine Netzwerkzugriffe ausser der optionalen Update-Prüfung gemacht.</li>
+</ul>
+</section>
+
+<p class="foot">SPÄNI Elektro-Mechanik AG · Support: <a href="https://support.elektro-spaeni.ch">support.elektro-spaeni.ch</a> · <a href="mailto:support@elektro-spaeni.ch">support@elektro-spaeni.ch</a></p>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+dist/
+bin/
+obj/
+publish/
+artifacts/
+*.user
+.vs/
+*.srconnect
+*.ovpn
+*.pfx
+*.key
+*.pem
+.env
+settings.json
+legacy/
+docs/HINTERGRUND.md

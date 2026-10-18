@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/VpnSwitch.Core/VpnSwitch.Core.csproj" />
+  <Project Path="src/VpnSwitch.App/VpnSwitch.App.csproj" />
+  <Project Path="tests/VpnSwitch.Tests/VpnSwitch.Tests.csproj" />
+</Solution>

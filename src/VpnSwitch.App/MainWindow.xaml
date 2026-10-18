@@ -1,0 +1,214 @@
+<Window x:Class="VpnSwitch.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:VpnSwitch.App"
+        xmlns:v="clr-namespace:VpnSwitch.App.Views"
+        Title="D2C VPN Switch" Height="700" Width="1040" MinWidth="820" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource AppBackgroundBrush}" FontFamily="Segoe UI"
+        Icon="pack://application:,,,/Assets/icon.ico"
+        Loaded="Window_Loaded" Closing="Window_Closing">
+    <Window.Resources>
+        <!-- Zeilenfarbe über die Eigenschaft "Tone" der Zeilenobjekte -->
+        <Style x:Key="ToneRow" TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tone}" Value="active">
+                    <Setter Property="Background" Value="#DCF5DC"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tone}" Value="ok">
+                    <Setter Property="Foreground" Value="DarkGreen"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tone}" Value="off">
+                    <Setter Property="Foreground" Value="Gray"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tone}" Value="bad">
+                    <Setter Property="Foreground" Value="DarkRed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <Window.InputBindings>
+        <KeyBinding Key="F1" Command="ApplicationCommands.Help"/>
+        <KeyBinding Key="F5" Command="NavigationCommands.Refresh"/>
+    </Window.InputBindings>
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Help" Executed="mi_Help_Click"/>
+        <CommandBinding Command="NavigationCommands.Refresh" Executed="bt_Scan_Click"/>
+    </Window.CommandBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Menü -->
+            <RowDefinition Height="Auto"/> <!-- Update-Hinweis -->
+            <RowDefinition Height="Auto"/> <!-- Kopfzeile -->
+            <RowDefinition Height="*"/>    <!-- Tabs -->
+            <RowDefinition Height="Auto"/> <!-- Log -->
+            <RowDefinition Height="Auto"/> <!-- Footer -->
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0" Background="White" Padding="4,2" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1">
+            <MenuItem Header="{l:Tr Menu_File}">
+                <MenuItem Header="{l:Tr Menu_Rescan}" InputGestureText="F5" Click="bt_Scan_Click"/>
+                <Separator/>
+                <MenuItem Header="{l:Tr Menu_Exit}" Click="mi_Exit_Click"/>
+            </MenuItem>
+            <MenuItem Header="{l:Tr Menu_Edit}">
+                <MenuItem Header="{l:Tr Menu_Settings}" Click="mi_Settings_Click"/>
+            </MenuItem>
+            <MenuItem Header="{l:Tr Menu_View}">
+                <MenuItem Header="{l:Tr Menu_Language}">
+                    <MenuItem x:Name="mi_LangDe" Header="Deutsch" IsCheckable="True" Click="mi_LangDe_Click"/>
+                    <MenuItem x:Name="mi_LangEn" Header="English" IsCheckable="True" Click="mi_LangEn_Click"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="{l:Tr Menu_Help}">
+                <MenuItem Header="{l:Tr Menu_HelpOpen}" InputGestureText="F1" Click="mi_Help_Click"/>
+                <MenuItem Header="{l:Tr Menu_QuickStart}" Tag="schnellstart" Click="mi_HelpTopic_Click"/>
+                <MenuItem Header="{l:Tr Menu_Troubleshooting}" Tag="fehlersuche" Click="mi_HelpTopic_Click"/>
+                <Separator/>
+                <MenuItem Header="{l:Tr Menu_CheckUpdates}" Click="mi_CheckUpdates_Click"/>
+                <MenuItem Header="{l:Tr Menu_OpenSettingsFolder}" Click="mi_SettingsFolder_Click"/>
+                <Separator/>
+                <MenuItem Header="{l:Tr Menu_About}" Click="mi_About_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Hinweis: neue Version verfügbar / Programm wurde aktualisiert -->
+        <Border x:Name="bd_Update" Grid.Row="1" Visibility="Collapsed" Margin="8,8,8,0" Padding="12,6"
+                Background="{StaticResource AccentLightBrush}" BorderBrush="{StaticResource AccentBrush}"
+                BorderThickness="1" CornerRadius="6">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="✕" MinWidth="28" Padding="6,2"
+                        ToolTip="{l:Tr Upd_Close}" Click="bt_UpdateClose_Click" Margin="6,0,0,0"/>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="bt_UpdateDownload" Style="{StaticResource PrimaryButton}" Content="{l:Tr Upd_Download}"
+                            Click="bt_UpdateDownload_Click" Margin="6,0,0,0"/>
+                    <Button x:Name="bt_UpdateNotes" Content="{l:Tr Upd_Notes}" Click="bt_UpdateNotes_Click" Margin="6,0,0,0"/>
+                    <Button x:Name="bt_UpdateSkip" Content="{l:Tr Upd_Skip}" Click="bt_UpdateSkip_Click" Margin="6,0,0,0"/>
+                </StackPanel>
+                <TextBlock x:Name="tb_UpdateText" VerticalAlignment="Center" TextWrapping="Wrap" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextBrush}"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Kopfzeile: aktiver Client, eCatcher-Status, Neu suchen -->
+        <Border Grid.Row="2" Margin="8,8,8,0" Padding="14,12" Background="{StaticResource CardBrush}"
+                BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="8">
+            <DockPanel>
+                <Button x:Name="bt_Scan" DockPanel.Dock="Right" Content="{l:Tr Btn_Rescan}" Style="{StaticResource PrimaryButton}"
+                        VerticalAlignment="Center" Padding="18,6" Click="bt_Scan_Click"/>
+                <Image DockPanel.Dock="Left" Source="pack://application:,,,/Assets/icon.ico" Width="40" Height="40" Margin="0,0,14,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="tb_Active" FontSize="16" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="tb_Ewon" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="tb_Driver" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    <ProgressBar x:Name="pb_Busy" IsIndeterminate="True" Height="4" Margin="0,8,0,0" Visibility="Collapsed"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <TabControl x:Name="tc_Main" Grid.Row="3" Margin="8,8,8,6" Background="{StaticResource AppBackgroundBrush}"
+                    BorderBrush="{StaticResource LineBrush}">
+            <!-- Umschalten -->
+            <TabItem Header="{l:Tr Tab_Switch}">
+                <DockPanel Margin="8">
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="bt_Activate" Style="{StaticResource PrimaryButton}" Content="{l:Tr Btn_Activate}" Click="bt_Activate_Click"/>
+                            <Button x:Name="bt_Repair" Content="{l:Tr Btn_RepairEc}" Margin="8,0,0,0" Click="bt_Repair_Click"/>
+                            <Button Style="{StaticResource HelpButton}" Tag="ecatcher-reparatur" Click="Help_Click" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock Text="{l:Tr Lbl_SwitchHint}" Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                    </StackPanel>
+                    <DataGrid x:Name="dg_Prov" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                              HeadersVisibility="Column" CanUserAddRows="False" RowStyle="{StaticResource ToneRow}"
+                              MouseDoubleClick="dg_Prov_DoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{l:Tr Col_Active}" Binding="{Binding Active}" Width="60"/>
+                            <DataGridTextColumn Header="{l:Tr Col_Client}" Binding="{Binding Label}" Width="280"/>
+                            <DataGridTextColumn Header="{l:Tr Col_Version}" Binding="{Binding Version}" Width="110"/>
+                            <DataGridTextColumn Header="{l:Tr Col_Path}" Binding="{Binding Path}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- Dienste -->
+            <TabItem Header="{l:Tr Tab_Services}">
+                <DockPanel Margin="8">
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button x:Name="bt_SvcStart" Content="{l:Tr Btn_Start}" Click="bt_SvcStart_Click"/>
+                        <Button x:Name="bt_SvcStop" Content="{l:Tr Btn_Stop}" Margin="8,0,0,0" Click="bt_SvcStop_Click"/>
+                        <Button x:Name="bt_SvcRestart" Content="{l:Tr Btn_Restart}" Margin="8,0,0,0" Click="bt_SvcRestart_Click"/>
+                        <Button x:Name="bt_Kill" Content="{l:Tr Btn_KillOvpn}" Margin="24,0,0,0" Click="bt_Kill_Click"/>
+                        <Button Style="{StaticResource HelpButton}" Tag="dienste" Click="Help_Click" Margin="8,0,0,0"/>
+                    </StackPanel>
+                    <DataGrid x:Name="dg_Svc" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                              HeadersVisibility="Column" CanUserAddRows="False" RowStyle="{StaticResource ToneRow}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{l:Tr Col_Service}" Binding="{Binding Name}" Width="190"/>
+                            <DataGridTextColumn Header="{l:Tr Col_Display}" Binding="{Binding Display}" Width="240"/>
+                            <DataGridTextColumn Header="{l:Tr Col_State}" Binding="{Binding State}" Width="90"/>
+                            <DataGridTextColumn Header="{l:Tr Col_Start}" Binding="{Binding StartMode}" Width="70"/>
+                            <DataGridTextColumn Header="{l:Tr Col_Path}" Binding="{Binding Path}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- Netzwerkadapter -->
+            <TabItem Header="{l:Tr Tab_Adapters}">
+                <DockPanel Margin="8">
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button x:Name="bt_AdRename" Content="{l:Tr Btn_Rename}" Click="bt_AdRename_Click"/>
+                        <Button x:Name="bt_AdEnable" Content="{l:Tr Btn_Enable}" Margin="8,0,0,0" Click="bt_AdEnable_Click"/>
+                        <Button x:Name="bt_AdDisable" Content="{l:Tr Btn_Disable}" Margin="8,0,0,0" Click="bt_AdDisable_Click"/>
+                        <Button x:Name="bt_AdNew" Content="{l:Tr Btn_NewTap}" Margin="24,0,0,0" Click="bt_AdNew_Click"/>
+                        <Button Style="{StaticResource HelpButton}" Tag="adapter" Click="Help_Click" Margin="8,0,0,0"/>
+                    </StackPanel>
+                    <DataGrid x:Name="dg_Ad" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                              HeadersVisibility="Column" CanUserAddRows="False" RowStyle="{StaticResource ToneRow}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{l:Tr Col_Name}" Binding="{Binding Name}" Width="190"/>
+                            <DataGridTextColumn Header="{l:Tr Col_Description}" Binding="{Binding Description}" Width="240"/>
+                            <DataGridTextColumn Header="{l:Tr Col_State}" Binding="{Binding Status}" Width="150"/>
+                            <DataGridTextColumn Header="{l:Tr Col_Driver}" Binding="{Binding Driver}" Width="110"/>
+                            <DataGridTextColumn Header="{l:Tr Col_Guid}" Binding="{Binding Guid}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- Installierte VPN-Software -->
+            <TabItem Header="{l:Tr Tab_Software}">
+                <DockPanel Margin="8">
+                    <DataGrid x:Name="dg_Apps" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                              HeadersVisibility="Column" CanUserAddRows="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{l:Tr Col_Program}" Binding="{Binding Name}" Width="380"/>
+                            <DataGridTextColumn Header="{l:Tr Col_Version}" Binding="{Binding Version}" Width="140"/>
+                            <DataGridTextColumn Header="{l:Tr Col_Publisher}" Binding="{Binding Publisher}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- Einstellungen -->
+            <TabItem x:Name="ti_Settings" Header="{l:Tr Tab_Settings}">
+                <v:SettingsView x:Name="SettingsPage"/>
+            </TabItem>
+        </TabControl>
+
+        <TextBox x:Name="tb_Log" Grid.Row="4" Style="{StaticResource MonoBox}" Height="120" Margin="8,0,8,6"
+                 TextWrapping="NoWrap"/>
+
+        <!-- Footer: links Firma, rechts Version (Entwickler nur im Info-Fenster) -->
+        <Border Grid.Row="5" Background="{StaticResource FooterBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+            <DockPanel Margin="12,4">
+                <TextBlock x:Name="tb_FooterVersion" DockPanel.Dock="Right" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+                <TextBlock x:Name="tb_FooterCompany" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

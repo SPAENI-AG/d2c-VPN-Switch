@@ -1,0 +1,25 @@
+﻿<Project>
+  <!--
+    Gemeinsame Angaben für alle Projekte.
+    Version: EINZIGE Stelle (Footer, Info, Update-Prüfung). Release-Workflow prüft sie gegen den Git-Tag.
+    GitHubRepository: "Organisation/Repository" – Platzhalter OWNER/... lässt die Update-Prüfung abgeschaltet,
+    bis das Repository angelegt und hier der echte Name eingetragen ist.
+  -->
+  <PropertyGroup>
+    <Version>2.0.0</Version>
+    <GitHubRepository>SPAENI-AG/d2c-VPN-Switch</GitHubRepository>
+
+    <Product>D2C VPN Switch</Product>
+    <Company>SPÄNI Elektro-Mechanik AG</Company>
+    <Authors>SPÄNI Elektro-Mechanik AG</Authors>
+    <Copyright>© SPÄNI Elektro-Mechanik AG</Copyright>
+    <RepositoryUrl>https://github.com/$(GitHubRepository)</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="GitHubRepository" Value="$(GitHubRepository)" />
+  </ItemGroup>
+</Project>

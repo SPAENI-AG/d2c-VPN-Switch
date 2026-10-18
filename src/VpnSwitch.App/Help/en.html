@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>D2C VPN Switch – Help</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>D2C VPN Switch – Help</h1>
+  <div class="lang"><a href="de.html">Deutsch</a><a href="en.html">English</a></div>
+</header>
+<div class="wrap">
+<nav>
+  <a href="#schnellstart">Quick start</a>
+  <a href="#umschalten">Switch</a>
+  <a href="#ecatcher-reparatur">Repair eCatcher adapter</a>
+  <a href="#dienste">Services</a>
+  <a href="#adapter">Network adapters</a>
+  <a href="#software">Installed software</a>
+  <a href="#einstellungen">Settings</a>
+  <a href="#fehlersuche">Troubleshooting</a>
+  <a href="#dateien">Files and folders</a>
+</nav>
+<main>
+
+<section id="schnellstart">
+<h2>Quick start</h2>
+<p>D2C VPN Switch keeps several OpenVPN-based remote-access clients working side by side on one PC:</p>
+<table>
+<tr><th>Client</th><th>Service</th><th>Adapter</th></tr>
+<tr><td>device2cloud / machinetoservice</td><td><code>OpenVPNServiceInteractive</code> (OpenVPN)</td><td><code>OpenVPN TAP-Windows6</code></td></tr>
+<tr><td>Sophos Connect</td><td><code>OpenVPNServiceInteractive</code> (Sophos)</td><td><code>Sophos-TAP</code></td></tr>
+<tr><td>eWON eCatcher (Talk2M)</td><td><code>Talk2mVpnService</code></td><td><code>Talk2m-eCatcher</code></td></tr>
+</table>
+<ol>
+<li>The program starts after the Windows prompt (administrator rights) and searches automatically.</li>
+<li>The top line shows which client currently owns the shared service <code>OpenVPNServiceInteractive</code>.</li>
+<li>On the <b>Switch</b> tab select the client you want and click <b>Activate selected</b>.</li>
+<li>The log at the bottom shows what happened.</li>
+</ol>
+<div class="note warn">Disconnect existing VPN connections before switching.</div>
+</section>
+
+<section id="umschalten">
+<h2>Switch</h2>
+<p>Sophos Connect and OpenVPN/device2cloud both register the service <code>OpenVPNServiceInteractive</code>, but with a different <code>openvpnserv.exe</code>.
+Only one can be active. <b>Activate selected</b> (or double-click):</p>
+<ol>
+<li>stops the service,</li>
+<li>sets its <code>ImagePath</code> in the registry to the selected <code>openvpnserv.exe</code>,</li>
+<li>starts the service again.</li>
+</ol>
+<p>eCatcher has its own service. For it, <b>activate</b> only starts the Talk2M service.</p>
+</section>
+
+<section id="ecatcher-reparatur">
+<h2>Repair eCatcher adapter</h2>
+<p>During installation eCatcher may take over another client's TAP adapter. device2cloud then cannot find its adapter (<code>Adapter '{GUID}' not found</code>). The repair assistant</p>
+<ol>
+<li>stops the Talk2M service,</li>
+<li>gives an adapter taken over by eCatcher back to OpenVPN (name <code>OpenVPN TAP-Windows6</code>),</li>
+<li>creates a separate adapter <code>Talk2m-eCatcher</code> for eCatcher (<code>tapctl</code>, otherwise <code>addtap.bat</code>),</li>
+<li>starts the Talk2M service again.</li>
+</ol>
+<div class="note warn">Close eCatcher first (also in the tray) and disconnect all VPN connections. Afterwards test device2cloud first, then eCatcher.</div>
+</section>
+
+<section id="dienste">
+<h2>Services</h2>
+<p>Shows all VPN-related services. Red: start type “Auto” but the service is not running. <b>Start</b>, <b>Stop</b>, <b>Restart</b> act on the selected service.
+<b>End running openvpn.exe</b> ends stuck OpenVPN processes that block a TAP adapter; existing connections are dropped.</p>
+</section>
+
+<section id="adapter">
+<h2>Network adapters</h2>
+<p>Shows TAP/Wintun and other VPN adapters with status and GUID. <b>Rename</b>, <b>Enable</b> and <b>Disable</b> act on the selected adapter.
+<b>New TAP adapter</b> creates another adapter with its own name so that every client has its own.</p>
+<div class="note">All “TAP-Windows Adapter V9” share the driver <code>tap0901.sys</code>. If a client installs an older driver (eCatcher: 9.0.0.21), adapters set up for the newer driver (9.24) may fail. Fix: repair the OpenVPN installation, align the driver in Device Manager, reboot.</div>
+</section>
+
+<section id="software">
+<h2>Installed VPN software</h2>
+<p>List of installed programs related to VPN (from the Windows program list), with version and publisher.</p>
+</section>
+
+<section id="einstellungen">
+<h2>Settings</h2>
+<table>
+<tr><th>Setting</th><th>Meaning</th></tr>
+<tr><td>Language</td><td>Deutsch or English, takes effect immediately. Also under View › Language.</td></tr>
+<tr><td>Check for new versions at startup</td><td>Asks GitHub for the latest version at most every 20 hours. No usage data is sent.</td></tr>
+</table>
+<p>No passwords or profile files are stored.</p>
+</section>
+
+<section id="fehlersuche">
+<h2>Troubleshooting</h2>
+<table>
+<tr><th>Message / symptom</th><th>Cause and remedy</th></tr>
+<tr><td><code>Adapter '{GUID}' not found</code></td><td>The service <code>OpenVPNServiceInteractive</code> belongs to the wrong client. Activate the right client on the <b>Switch</b> tab.</td></tr>
+<tr><td><code>CreateFile failed on tap-windows6 device</code></td><td>Driver conflict (see Network adapters) or a stuck <code>openvpn.exe</code>. First <b>End running openvpn.exe</b>, otherwise repair the OpenVPN installation and reboot.</td></tr>
+<tr><td>Adapter “Talk2m-eCatcher” missing</td><td><b>Repair eCatcher adapter</b> or <b>New TAP adapter</b> named <code>Talk2m-eCatcher</code>.</td></tr>
+<tr><td>Error while switching</td><td>Disconnect VPN connections, check the Services tab and try again. The error text is in the log.</td></tr>
+<tr><td>Program does not start</td><td>The Windows prompt (administrator rights) must be confirmed.</td></tr>
+</table>
+</section>
+
+<section id="dateien">
+<h2>Files and folders</h2>
+<ul>
+<li>Settings: <code>%APPDATA%\D2C-VPN-Switch\settings.json</code> (Help › Open settings folder)</li>
+<li>No network access except the optional update check.</li>
+</ul>
+</section>
+
+<p class="foot">SPÄNI Elektro-Mechanik AG · Support: <a href="https://support.elektro-spaeni.ch">support.elektro-spaeni.ch</a> · <a href="mailto:support@elektro-spaeni.ch">support@elektro-spaeni.ch</a></p>
+</main>
+</div>
+</body>
+</html>
